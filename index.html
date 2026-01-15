@@ -1,66 +1,57 @@
-<!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Niemiecki</title>
+    <title>Audio Playback Example</title>
     <script>
-        // Function to shuffle an array using Fisher-Yates algorithm
-        function shuffle(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
+        let audioContext;
+        let oscillators = [];
+        let isMuted = false;
+        let shuffleQueue = false;
+        let audioQueue = [];
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            oscillators.forEach(osc => {
+                if (isMuted) {
+                    osc.stop();
+                } else {
+                    playAudio();
+                }
+            });
+        }
+
+        function shuffleAudioQueue() {
+            audioQueue.sort(() => Math.random() - 0.5);
+        }
+
+        function playAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
             }
-            return array;
-        }
-
-        // Play audio feedback
-        let audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        let successTone, failTone, newTone;
-
-        function setupSounds() {
-            successTone = createTone(440); // A4
-            failTone = createTone(349); // F4
-            newTone = createTone(523); // C5
-        }
-
-        function createTone(frequency) {
-            let oscillator = audioContext.createOscillator();
+            const oscillator = audioContext.createOscillator();
+            oscillators.push(oscillator);
             oscillator.type = 'sine';
-            oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+            oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
             oscillator.connect(audioContext.destination);
-            return oscillator;
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 1);
+            oscillator.onended = () => {
+                const index = oscillators.indexOf(oscillator);
+                if (index > -1) {
+                    oscillators.splice(index, 1);
+                }
+            };
         }
 
-        function playSound(tone) {
-            tone.start();
-            tone.stop(audioContext.currentTime + 0.5); // Play for 0.5 seconds
-        }
-
-        // Call this function on success
-        function onSuccess() {
-            playSound(successTone);
-        }
-
-        // Call this function on fail
-        function onFail() {
-            playSound(failTone);
-        }
-
-        // Add your 'losuj()' and 'sprawdz()' functions here
-        function losuj() {
-            onSuccess(); // Call onSuccess when needed
-            // Other functionality...
-        }
-        
-        function sprawdz() {
-            onFail(); // Call onFail when needed
-            // Other functionality...
-        }
+        document.addEventListener('DOMContentLoaded', () => {
+            playAudio();
+            document.getElementById('muteToggle').addEventListener('click', toggleMute);
+            document.getElementById('shuffleButton').addEventListener('click', shuffleAudioQueue);
+        });
     </script>
 </head>
-<body onload="setupSounds()">
-    <h1>Niemiecki Game</h1>
-    <!-- Your content here -->
+<body>
+    <h1>WebAudio Example</h1>
+    <button id="muteToggle">Toggle Mute</button>
+    <button id="shuffleButton">Shuffle Queue</button>
 </body>
 </html>
