@@ -2,77 +2,131 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<title>Niemiecki – nieregularne czasowniki</title>
+<title>Niemiecki – Quiz Partizip II</title>
+
 <style>
-body { font-family: Arial; padding: 20px; }
-table { border-collapse: collapse; margin-top: 10px; }
-td, th { border: 1px solid #ccc; padding: 8px; text-align: center; }
-input { width: 120px; }
+body {
+    font-family: Arial, sans-serif;
+    padding: 30px;
+    max-width: 500px;
+}
+input {
+    width: 100%;
+    padding: 8px;
+    margin: 6px 0;
+    font-size: 16px;
+}
+button {
+    padding: 6px 12px;
+    margin: 4px 2px;
+    font-size: 14px;
+    cursor: pointer;
+}
 .ok { background: #c8f7c5; }
 .bad { background: #f7c5c5; }
-button { margin-top: 10px; padding: 5px 15px; }
+#score { font-weight: bold; margin-top: 10px; }
+.umlaut button { width: 45px; }
 </style>
 </head>
+
 <body>
 
-<h2 id="verb-title">Czasownik: </h2>
-<p id="verb-translation">Tłumaczenie: </p>
+<h2>Podaj formy po niemiecku</h2>
 
-<table>
-<tr><th>Osoba</th><th>Forma (Präsens)</th></tr>
-<tr><td>ich</td><td><input id="ich"></td></tr>
-<tr><td>du</td><td><input id="du"></td></tr>
-<tr><td>er/sie/es</td><td><input id="er"></td></tr>
-<tr><td>wir</td><td><input id="wir"></td></tr>
-<tr><td>ihr</td><td><input id="ihr"></td></tr>
-<tr><td>sie/Sie</td><td><input id="sie"></td></tr>
-<tr><td>Partizip II</td><td><input id="partizip"></td></tr>
-</table>
+<p id="pl-verb"><b>Czasownik (PL):</b></p>
 
+<label>Bezokolicznik (DE)</label>
+<input id="infinitiv" placeholder="np. fahren">
+
+<label>Partizip II</label>
+<input id="partizip" placeholder="np. gefahren">
+
+<div class="umlaut">
+    <button onclick="insert('ä')">ä</button>
+    <button onclick="insert('ö')">ö</button>
+    <button onclick="insert('ü')">ü</button>
+    <button onclick="insert('ß')">ß</button>
+</div>
+
+<br>
 <button onclick="sprawdz()">Sprawdź</button>
-<button onclick="losujVerb()">Nowy czasownik</button>
+<button onclick="losuj()">Nowy czasownik</button>
+
+<p id="feedback"></p>
+<p id="score">Punkty: 0</p>
 
 <script>
 const verbs = [
-  {inf: "sein", trans: "być", pres: ["bin","bist","ist","sind","seid","sind"], part: "gewesen"},
-  {inf: "haben", trans: "mieć", pres: ["habe","hast","hat","haben","habt","haben"], part: "gehabt"},
-  {inf: "werden", trans: "stawać się", pres: ["werde","wirst","wird","werden","werdet","werden"], part: "geworden"},
-  {inf: "gehen", trans: "iść", pres: ["gehe","gehst","geht","gehen","geht","gehen"], part: "gegangen"},
-  {inf: "kommen", trans: "przyjść", pres: ["komme","kommst","kommt","kommen","kommt","kommen"], part: "gekommen"},
-  {inf: "fahren", trans: "jechać", pres: ["fahre","fährst","fährt","fahren","fahrt","fahren"], part: "gefahren"},
-  {inf: "sehen", trans: "widzieć", pres: ["sehe","siehst","sieht","sehen","seht","sehen"], part: "gesehen"},
-  {inf: "essen", trans: "jeść", pres: ["esse","isst","isst","essen","esst","essen"], part: "gegessen"},
-  {inf: "geben", trans: "dawać", pres: ["gebe","gibst","gibt","geben","gebt","geben"], part: "gegeben"},
-  {inf: "nehmen", trans: "brać", pres: ["nehme","nimmst","nimmt","nehmen","nehmt","nehmen"], part: "genommen"}
+  {pl:"być", de:"sein", part:"gewesen"},
+  {pl:"mieć", de:"haben", part:"gehabt"},
+  {pl:"iść", de:"gehen", part:"gegangen"},
+  {pl:"jechać", de:"fahren", part:"gefahren"},
+  {pl:"przyjść", de:"kommen", part:"gekommen"},
+  {pl:"widzieć", de:"sehen", part:"gesehen"},
+  {pl:"jeść", de:"essen", part:"gegessen"},
+  {pl:"dawać", de:"geben", part:"gegeben"},
+  {pl:"brać", de:"nehmen", part:"genommen"},
+  {pl:"czytać", de:"lesen", part:"gelesen"}
 ];
 
 let current;
+let score = 0;
 
-function losujVerb() {
+function losuj() {
     current = verbs[Math.floor(Math.random() * verbs.length)];
-    document.getElementById("verb-title").innerText = "Czasownik: " + current.inf;
-    document.getElementById("verb-translation").innerText = "Tłumaczenie: " + current.trans;
+    document.getElementById("pl-verb").innerHTML =
+        "<b>Czasownik (PL):</b> " + current.pl;
 
-    ["ich","du","er","wir","ihr","sie","partizip"].forEach(id => {
-        document.getElementById(id).value = "";
-        document.getElementById(id).className = "";
+    ["infinitiv","partizip"].forEach(id => {
+        const el = document.getElementById(id);
+        el.value = "";
+        el.className = "";
     });
+
+    document.getElementById("feedback").innerText = "";
 }
 
 function sprawdz() {
-    const ids = ["ich","du","er","wir","ihr","sie"];
-    ids.forEach((id, i) => {
-        const input = document.getElementById(id);
-        if(input.value.trim().toLowerCase() === current.pres[i]) input.className = "ok";
-        else input.className = "bad";
-    });
-    const partInput = document.getElementById("partizip");
-    if(partInput.value.trim().toLowerCase() === current.part) partInput.className = "ok";
-    else partInput.className = "bad";
+    let ok = true;
+
+    const inf = document.getElementById("infinitiv");
+    const part = document.getElementById("partizip");
+
+    if (inf.value.trim().toLowerCase() === current.de) {
+        inf.className = "ok";
+    } else {
+        inf.className = "bad";
+        ok = false;
+    }
+
+    if (part.value.trim().toLowerCase() === current.part) {
+        part.className = "ok";
+    } else {
+        part.className = "bad";
+        ok = false;
+    }
+
+    if (ok) {
+        score++;
+        document.getElementById("feedback").innerText = "✅ Dobrze!";
+    } else {
+        document.getElementById("feedback").innerText =
+            ❌ Poprawnie: ${current.de} – ${current.part};
+    }
+
+    document.getElementById("score").innerText = "Punkty: " + score;
 }
 
-// losujemy pierwszy czasownik przy starcie
-losujVerb();
+function insert(char) {
+    const el = document.activeElement;
+    if (el.tagName === "INPUT") {
+        el.value += char;
+        el.focus();
+    }
+}
+
+// start
+losuj();
 </script>
 
 </body>
