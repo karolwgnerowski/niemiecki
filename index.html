@@ -33,7 +33,7 @@ button {
 
 <h2>Podaj formy po niemiecku</h2>
 
-<p id="pl-verb"><b>Czasownik (PL):</b></p>
+<p id="pl-verb"></p>
 
 <label>Bezokolicznik (DE)</label>
 <input id="infinitiv" placeholder="np. fahren">
@@ -42,10 +42,10 @@ button {
 <input id="partizip" placeholder="np. gefahren">
 
 <div class="umlaut">
-    <button onclick="insert('ä')">ä</button>
-    <button onclick="insert('ö')">ö</button>
-    <button onclick="insert('ü')">ü</button>
-    <button onclick="insert('ß')">ß</button>
+    <button onclick="insertChar('ä')">ä</button>
+    <button onclick="insertChar('ö')">ö</button>
+    <button onclick="insertChar('ü')">ü</button>
+    <button onclick="insertChar('ß')">ß</button>
 </div>
 
 <br>
@@ -69,13 +69,13 @@ const verbs = [
   {pl:"czytać", de:"lesen", part:"gelesen"}
 ];
 
-let current;
+let current = null;
 let score = 0;
 
 function losuj() {
     current = verbs[Math.floor(Math.random() * verbs.length)];
-    document.getElementById("pl-verb").innerHTML =
-        "<b>Czasownik (PL):</b> " + current.pl;
+    document.getElementById("pl-verb").textContent =
+        "Czasownik (PL): " + current.pl;
 
     ["infinitiv","partizip"].forEach(id => {
         const el = document.getElementById(id);
@@ -83,7 +83,7 @@ function losuj() {
         el.className = "";
     });
 
-    document.getElementById("feedback").innerText = "";
+    document.getElementById("feedback").textContent = "";
 }
 
 function sprawdz() {
@@ -108,21 +108,29 @@ function sprawdz() {
 
     if (ok) {
         score++;
-        document.getElementById("feedback").innerText = "✅ Dobrze!";
+        document.getElementById("feedback").textContent = "✅ Dobrze!";
     } else {
-        document.getElementById("feedback").innerText =
+        document.getElementById("feedback").textContent =
             ❌ Poprawnie: ${current.de} – ${current.part};
     }
 
-    document.getElementById("score").innerText = "Punkty: " + score;
+    document.getElementById("score").textContent = "Punkty: " + score;
 }
 
-function insert(char) {
+function insertChar(char) {
     const el = document.activeElement;
-    if (el.tagName === "INPUT") {
-        el.value += char;
-        el.focus();
-    }
+    if (!el || el.tagName !== "INPUT") return;
+
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
+
+    el.value =
+        el.value.substring(0, start) +
+        char +
+        el.value.substring(end);
+
+    el.selectionStart = el.selectionEnd = start + 1;
+    el.focus();
 }
 
 // start
