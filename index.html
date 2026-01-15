@@ -1,57 +1,276 @@
-<html>
+<!DOCTYPE html>
+<html lang="pl">
 <head>
-    <title>Audio Playback Example</title>
-    <script>
-        let audioContext;
-        let oscillators = [];
-        let isMuted = false;
-        let shuffleQueue = false;
-        let audioQueue = [];
-
-        function toggleMute() {
-            isMuted = !isMuted;
-            oscillators.forEach(osc => {
-                if (isMuted) {
-                    osc.stop();
-                } else {
-                    playAudio();
-                }
-            });
-        }
-
-        function shuffleAudioQueue() {
-            audioQueue.sort(() => Math.random() - 0.5);
-        }
-
-        function playAudio() {
-            if (!audioContext) {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            const oscillator = audioContext.createOscillator();
-            oscillators.push(oscillator);
-            oscillator.type = 'sine';
-            oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
-            oscillator.connect(audioContext.destination);
-            oscillator.start();
-            oscillator.stop(audioContext.currentTime + 1);
-            oscillator.onended = () => {
-                const index = oscillators.indexOf(oscillator);
-                if (index > -1) {
-                    oscillators.splice(index, 1);
-                }
-            };
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            playAudio();
-            document.getElementById('muteToggle').addEventListener('click', toggleMute);
-            document.getElementById('shuffleButton').addEventListener('click', shuffleAudioQueue);
-        });
-    </script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Niemiecki – Quiz Partizip II</title>
+<style>
+:root{
+  --bg:#0b1220;
+  --card:#0f1724;
+  --muted:#94a3b8;
+  --accent:#06b6d4;
+  --accent-contrast:#022f33;
+  --ok:#16a34a;
+  --bad:#dc2626;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background:linear-gradient(180deg,var(--bg),#07101a);
+  color:#e6eef6;
+}
+.container{
+  width:100%;
+  max-width:760px;
+  background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border-radius:12px;
+  padding:22px;
+  border:1px solid rgba(255,255,255,0.03);
+  box-shadow:0 10px 30px rgba(2,6,23,0.6);
+}
+h2{margin:0 0 8px 0;font-size:20px}
+#pl-verb{margin-bottom:8px;font-size:16px}
+label{display:block;font-size:13px;color:var(--muted);margin-top:10px}
+input{
+  width:100%;
+  padding:12px 14px;
+  margin-top:6px;
+  font-size:17px;
+  border-radius:8px;
+  border:1px solid rgba(255,255,255,0.06);
+  background:rgba(255,255,255,0.02);
+  color:inherit;
+  outline:none;
+  transition:box-shadow .12s,border-color .12s;
+}
+input:focus{box-shadow:0 6px 18px rgba(2,6,23,0.6);border-color:var(--accent)}
+.umlaut{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
+.umlaut button{width:48px;height:44px;padding:0;font-size:18px;border-radius:8px;background:rgba(255,255,255,0.02);color:inherit;border:1px solid rgba(255,255,255,0.03);cursor:pointer}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+button.main{
+  padding:10px 14px;border-radius:10px;border:none;background:var(--accent);color:var(--accent-contrast);font-size:15px;cursor:pointer;
+}
+button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
+.ok{background:linear-gradient(90deg, rgba(22,163,74,0.12), rgba(22,163,74,0.06));border:1px solid rgba(22,163,74,0.18)}
+.bad{background:linear-gradient(90deg, rgba(220,38,38,0.08), rgba(220,38,38,0.04));border:1px solid rgba(220,38,38,0.12)}
+#feedback{margin-top:10px;font-weight:600}
+#score{margin-top:10px;color:var(--muted);font-weight:600}
+.footer{display:flex;justify-content:space-between;gap:12px;margin-top:18px;color:var(--muted);font-size:13px}
+@media(max-width:480px){
+  .container{padding:16px}
+  input{padding:14px;font-size:18px;border-radius:12px}
+  .umlaut button{width:56px;height:52px;font-size:20px}
+  button.main{padding:12px 16px;font-size:16px;border-radius:12px}
+}
+</style>
 </head>
 <body>
-    <h1>WebAudio Example</h1>
-    <button id="muteToggle">Toggle Mute</button>
-    <button id="shuffleButton">Shuffle Queue</button>
+<div class="container" role="main">
+  <h2>Podaj formy po niemiecku</h2>
+  <p id="pl-verb"><b>Czasownik (PL):</b></p>
+
+  <label for="infinitiv">Bezokolicznik (DE)</label>
+  <input id="infinitiv" placeholder="np. fahren" autocomplete="off" />
+
+  <label for="partizip">Partizip II</label>
+  <input id="partizip" placeholder="np. gefahren" autocomplete="off" />
+
+  <div class="umlaut" role="toolbar" aria-label="Umlauty">
+    <button type="button" onclick="insertChar('ä')" aria-label="wstaw ä">ä</button>
+    <button type="button" onclick="insertChar('ö')" aria-label="wstaw ö">ö</button>
+    <button type="button" onclick="insertChar('ü')" aria-label="wstaw ü">ü</button>
+    <button type="button" onclick="insertChar('ß')" aria-label="wstaw ß">ß</button>
+  </div>
+
+  <div class="actions">
+    <button class="main" type="button" onclick="check()">Sprawdź</button>
+    <button class="main" type="button" onclick="nextVerb()">Nowy czasownik</button>
+    <button id="muteBtn" class="ghost" type="button" onclick="toggleMute()">Wyłącz dźwięk</button>
+  </div>
+
+  <p id="feedback" aria-live="polite"></p>
+  <p id="score">Punkty: 0</p>
+
+  <div class="footer">
+    <div>Kliknij pole, ustaw kursor i wybierz znak umlaut</div>
+    <div>Responsywne — wygodne na telefonie</div>
+  </div>
+</div>
+
+<script>
+/* ====== Dane ====== */
+const verbs = [
+  {pl:"być", de:"sein", part:"gewesen"},
+  {pl:"mieć", de:"haben", part:"gehabt"},
+  {pl:"iść", de:"gehen", part:"gegangen"},
+  {pl:"jechać", de:"fahren", part:"gefahren"},
+  {pl:"przyjść", de:"kommen", part:"gekommen"},
+  {pl:"widzieć", de:"sehen", part:"gesehen"},
+  {pl:"jeść", de:"essen", part:"gegessen"},
+  {pl:"dawać", de:"geben", part:"gegeben"},
+  {pl:"brać", de:"nehmen", part:"genommen"},
+  {pl:"czytać", de:"lesen", part:"gelesen"}
+];
+
+/* ====== Shuffle + kolejka ====== */
+let shuffled = [];
+let idx = 0;
+
+function shuffleArray(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+function ensureShuffled(){
+  if(!shuffled.length || idx>=shuffled.length){
+    shuffled = shuffleArray(verbs);
+    idx = 0;
+  }
+}
+
+/* ====== Stan ====== */
+let current = null;
+let score = 0;
+let lastFocused = null;
+let muted = false;
+
+/* ====== Web Audio (tworzymy oscylator przy każdym play) ====== */
+let audioCtx = null;
+function ensureAudio(){
+  if(!audioCtx){
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if(audioCtx.state === 'suspended'){
+    audioCtx.resume().catch(()=>{});
+  }
+  return audioCtx;
+}
+function playTone(freq, duration=0.12, type='sine', gainLevel=0.12){
+  if(muted) return;
+  try{
+    const ctx = ensureAudio();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = type;
+    o.frequency.value = freq;
+    o.connect(g);
+    g.connect(ctx.destination);
+    const now = ctx.currentTime;
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.exponentialRampToValueAtTime(gainLevel, now + 0.01);
+    o.start(now);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+    o.stop(now + duration + 0.02);
+  }catch(e){
+    console.warn('Audio error', e);
+  }
+}
+function playSound(name){
+  if(muted) return;
+  if(name==='success'){
+    playTone(880, 0.14, 'sine', 0.12);
+    setTimeout(()=>playTone(1320, 0.09, 'sine', 0.08), 80);
+  } else if(name==='fail'){
+    playTone(220, 0.18, 'sawtooth', 0.12);
+  } else if(name==='new'){
+    playTone(520, 0.09, 'triangle', 0.10);
+  }
+}
+function toggleMute(){
+  muted = !muted;
+  document.getElementById('muteBtn').innerText = muted ? 'Włącz dźwięk' : 'Wyłącz dźwięk';
+}
+
+/* ====== UI / logika quizu ====== */
+function renderVerb(v){
+  document.getElementById('pl-verb').innerHTML = "<b>Czasownik (PL):</b> " + (v ? v.pl : '');
+}
+function clearInputs(){
+  ['infinitiv','partizip'].forEach(id=>{
+    const el=document.getElementById(id);
+    el.value='';
+    el.className='';
+  });
+  document.getElementById('feedback').innerText='';
+}
+
+function nextVerb(){
+  ensureShuffled();
+  current = shuffled[idx++];
+  renderVerb(current);
+  clearInputs();
+  const inf = document.getElementById('infinitiv');
+  inf.focus();
+  lastFocused = inf;
+  playSound('new');
+}
+
+function check(){
+  if(!current) return;
+  let ok = true;
+  const inf = document.getElementById('infinitiv');
+  const part = document.getElementById('partizip');
+
+  if(inf.value.trim().toLowerCase() === current.de){
+    inf.className = 'ok';
+  } else {
+    inf.className = 'bad';
+    ok = false;
+  }
+
+  if(part.value.trim().toLowerCase() === current.part){
+    part.className = 'ok';
+  } else {
+    part.className = 'bad';
+    ok = false;
+  }
+
+  if(ok){
+    score++;
+    document.getElementById('feedback').innerText = '✅ Dobrze!';
+    playSound('success');
+    document.getElementById('score').innerText = 'Punkty: ' + score;
+    // automatyczne przejście do następnego po krótkim czasie
+    setTimeout(nextVerb, 650);
+  } else {
+    document.getElementById('feedback').innerText = `❌ Poprawnie: ${current.de} – ${current.part}`;
+    playSound('fail');
+    document.getElementById('score').innerText = 'Punkty: ' + score;
+  }
+}
+
+/* ====== Umlaut insertion (w miejscu kursora) ====== */
+function insertChar(ch){
+  const el = lastFocused || document.getElementById('infinitiv');
+  if(el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')){
+    const start = el.selectionStart ?? el.value.length;
+    const end = el.selectionEnd ?? el.value.length;
+    el.value = el.value.slice(0,start) + ch + el.value.slice(end);
+    const pos = start + ch.length;
+    el.setSelectionRange(pos,pos);
+    el.focus();
+    lastFocused = el;
+  }
+}
+
+/* zapamiętywanie focusa dla inputów */
+['infinitiv','partizip'].forEach(id=>{
+  const el = document.getElementById(id);
+  el.addEventListener('focus', ()=> lastFocused = el);
+  el.addEventListener('click', ()=> lastFocused = el);
+});
+
+/* start */
+nextVerb();
+</script>
 </body>
 </html>
