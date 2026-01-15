@@ -1,213 +1,66 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Niemiecki – Quiz Partizip II</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Niemiecki</title>
+    <script>
+        // Function to shuffle an array using Fisher-Yates algorithm
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
 
-<style>
-:root{
-  --bg:#0b1220;
-  --card:#0f1724;
-  --muted:#94a3b8;
-  --accent:#06b6d4;
-  --accent-contrast:#022f33;
-  --ok:#16a34a;
-  --bad:#dc2626;
-}
-*{box-sizing:border-box}
-html,body{height:100%;}
-body {
-    margin:0;
-    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-    background: linear-gradient(180deg, var(--bg), #07101a);
-    color:#e6eef6;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:24px;
-}
-.container{
-  width:100%;
-  max-width:720px;
-  background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  border-radius:12px;
-  padding:24px;
-  box-shadow: 0 8px 30px rgba(2,6,23,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
-  border:1px solid rgba(255,255,255,0.03);
-}
-h2{margin:0 0 12px 0;font-size:20px}
-.card-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-label{display:block;font-size:13px;color:var(--muted);margin-top:12px}
-input{
-    width:100%;
-    padding:12px 14px;
-    margin:6px 0 0 0;
-    font-size:17px;
-    border-radius:8px;
-    border:1px solid rgba(255,255,255,0.06);
-    background:rgba(255,255,255,0.02);
-    color:inherit;
-    outline:none;
-    transition:box-shadow .15s, border-color .15s;
-}
-input:focus{box-shadow:0 6px 18px rgba(2,6,23,0.6);border-color:var(--accent)}
-button{
-    padding:10px 14px;
-    margin:8px 6px 0 0;
-    font-size:15px;
-    border-radius:10px;
-    border:none;
-    cursor:pointer;
-    background:var(--accent);
-    color:var(--accent-contrast);
-    transition:transform .08s ease, box-shadow .12s ease, opacity .12s;
-}
-button:active{transform:translateY(1px)}
-.umlaut{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
-.umlaut button{width:48px;height:44px;padding:0;font-size:18px;border-radius:8px;background:rgba(255,255,255,0.02);color:inherit;border:1px solid rgba(255,255,255,0.03)}
-.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-.ok { background: linear-gradient(90deg, rgba(22,163,74,0.12), rgba(22,163,74,0.06)); border:1px solid rgba(22,163,74,0.18); }
-.bad { background: linear-gradient(90deg, rgba(220,38,38,0.08), rgba(220,38,38,0.04)); border:1px solid rgba(220,38,38,0.12); }
-#score { font-weight:600; margin-top:12px; color:var(--muted); }
-#feedback{margin-top:10px;font-weight:600}
-.footer{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:16px}
-.small{font-size:13px;color:var(--muted)}
-/* Responsive, larger touch targets on small screens */
-@media (max-width:480px){
-  body{padding:16px}
-  .container{padding:18px}
-  h2{font-size:18px}
-  input{padding:14px;font-size:18px;border-radius:12px}
-  button{padding:12px 16px;font-size:17px;border-radius:12px}
-  .umlaut button{width:56px;height:52px;font-size:20px}
-  .actions{width:100%}
-}
-</style>
+        // Play audio feedback
+        let audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        let successTone, failTone, newTone;
+
+        function setupSounds() {
+            successTone = createTone(440); // A4
+            failTone = createTone(349); // F4
+            newTone = createTone(523); // C5
+        }
+
+        function createTone(frequency) {
+            let oscillator = audioContext.createOscillator();
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+            oscillator.connect(audioContext.destination);
+            return oscillator;
+        }
+
+        function playSound(tone) {
+            tone.start();
+            tone.stop(audioContext.currentTime + 0.5); // Play for 0.5 seconds
+        }
+
+        // Call this function on success
+        function onSuccess() {
+            playSound(successTone);
+        }
+
+        // Call this function on fail
+        function onFail() {
+            playSound(failTone);
+        }
+
+        // Add your 'losuj()' and 'sprawdz()' functions here
+        function losuj() {
+            onSuccess(); // Call onSuccess when needed
+            // Other functionality...
+        }
+        
+        function sprawdz() {
+            onFail(); // Call onFail when needed
+            // Other functionality...
+        }
+    </script>
 </head>
-
-<body>
-
-<div class="container">
-  <h2>Podaj formy po niemiecku</h2>
-
-  <p id="pl-verb"><b>Czasownik (PL):</b></p>
-
-  <label for="infinitiv">Bezokolicznik (DE)</label>
-  <input id="infinitiv" placeholder="np. fahren" autocomplete="off">
-
-  <label for="partizip">Partizip II</label>
-  <input id="partizip" placeholder="np. gefahren" autocomplete="off">
-
-  <div class="umlaut" role="toolbar" aria-label="Umlauty">
-      <button type="button" onclick="insert('ä')" aria-label="wstaw ä">ä</button>
-      <button type="button" onclick="insert('ö')" aria-label="wstaw ö">ö</button>
-      <button type="button" onclick="insert('ü')" aria-label="wstaw ü">ü</button>
-      <button type="button" onclick="insert('ß')" aria-label="wstaw ß">ß</button>
-  </div>
-
-  <div class="actions">
-    <button type="button" onclick="sprawdz()">Sprawdź</button>
-    <button type="button" onclick="losuj()">Nowy czasownik</button>
-  </div>
-
-  <p id="feedback"></p>
-  <p id="score">Punkty: 0</p>
-
-  <div class="footer">
-    <div class="small">Kliknij pole, ustaw kursor i wybierz znak umlaut</div>
-    <div class="small">Code by: KW</div>
-  </div>
-</div>
-
-<script>
-const verbs = [
-  {pl:"być", de:"sein", part:"gewesen"},
-  {pl:"mieć", de:"haben", part:"gehabt"},
-  {pl:"iść", de:"gehen", part:"gegangen"},
-  {pl:"jechać", de:"fahren", part:"gefahren"},
-  {pl:"przyjść", de:"kommen", part:"gekommen"},
-  {pl:"widzieć", de:"sehen", part:"gesehen"},
-  {pl:"jeść", de:"essen", part:"gegessen"},
-  {pl:"dawać", de:"geben", part:"gegeben"},
-  {pl:"brać", de:"nehmen", part:"genommen"},
-  {pl:"czytać", de:"lesen", part:"gelesen"}
-];
-
-let current;
-let score = 0;
-let lastFocused = null;
-
-function losuj() {
-    current = verbs[Math.floor(Math.random() * verbs.length)];
-    document.getElementById("pl-verb").innerHTML =
-        "<b>Czasownik (PL):</b> " + current.pl;
-
-    ["infinitiv","partizip"].forEach(id => {
-        const el = document.getElementById(id);
-        el.value = "";
-        el.className = "";
-    });
-
-    document.getElementById("feedback").innerText = "";
-    const inf = document.getElementById("infinitiv");
-    inf.focus();
-    lastFocused = inf;
-}
-
-function sprawdz() {
-    let ok = true;
-
-    const inf = document.getElementById("infinitiv");
-    const part = document.getElementById("partizip");
-
-    if (inf.value.trim().toLowerCase() === current.de) {
-        inf.className = "ok";
-    } else {
-        inf.className = "bad";
-        ok = false;
-    }
-
-    if (part.value.trim().toLowerCase() === current.part) {
-        part.className = "ok";
-    } else {
-        part.className = "bad";
-        ok = false;
-    }
-
-    if (ok) {
-        score++;
-        document.getElementById("feedback").innerText = "✅ Dobrze!";
-    } else {
-        document.getElementById("feedback").innerText =
-            `❌ Poprawnie: ${current.de} – ${current.part}`;
-    }
-
-    document.getElementById("score").innerText = "Punkty: " + score;
-}
-
-function insert(char) {
-    const el = lastFocused || document.getElementById("infinitiv");
-    if (el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA")) {
-        const start = el.selectionStart ?? el.value.length;
-        const end = el.selectionEnd ?? el.value.length;
-        el.value = el.value.slice(0, start) + char + el.value.slice(end);
-        const pos = start + char.length;
-        el.setSelectionRange(pos, pos);
-        el.focus();
-        lastFocused = el;
-    }
-}
-
-["infinitiv","partizip"].forEach(id => {
-    const el = document.getElementById(id);
-    el.addEventListener('focus', () => lastFocused = el);
-    el.addEventListener('click', () => lastFocused = el);
-});
-
-// start
-losuj();
-</script>
-
+<body onload="setupSounds()">
+    <h1>Niemiecki Game</h1>
+    <!-- Your content here -->
 </body>
 </html>
