@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>Niemiecki – nieregularne czasowniki</title>
+<style>
+body { font-family: Arial; padding: 20px; }
+table { border-collapse: collapse; margin-top: 10px; }
+td, th { border: 1px solid #ccc; padding: 8px; text-align: center; }
+input { width: 120px; }
+.ok { background: #c8f7c5; }
+.bad { background: #f7c5c5; }
+button { margin-top: 10px; padding: 5px 15px; }
+</style>
+</head>
+<body>
+
+<h2 id="verb-title">Czasownik: </h2>
+<p id="verb-translation">Tłumaczenie: </p>
+
+<table>
+<tr><th>Osoba</th><th>Forma (Präsens)</th></tr>
+<tr><td>ich</td><td><input id="ich"></td></tr>
+<tr><td>du</td><td><input id="du"></td></tr>
+<tr><td>er/sie/es</td><td><input id="er"></td></tr>
+<tr><td>wir</td><td><input id="wir"></td></tr>
+<tr><td>ihr</td><td><input id="ihr"></td></tr>
+<tr><td>sie/Sie</td><td><input id="sie"></td></tr>
+<tr><td>Partizip II</td><td><input id="partizip"></td></tr>
+</table>
+
+<button onclick="sprawdz()">Sprawdź</button>
+<button onclick="losujVerb()">Nowy czasownik</button>
+
+<script>
+const verbs = [
+  {inf: "sein", trans: "być", pres: ["bin","bist","ist","sind","seid","sind"], part: "gewesen"},
+  {inf: "haben", trans: "mieć", pres: ["habe","hast","hat","haben","habt","haben"], part: "gehabt"},
+  {inf: "werden", trans: "stawać się", pres: ["werde","wirst","wird","werden","werdet","werden"], part: "geworden"},
+  {inf: "gehen", trans: "iść", pres: ["gehe","gehst","geht","gehen","geht","gehen"], part: "gegangen"},
+  {inf: "kommen", trans: "przyjść", pres: ["komme","kommst","kommt","kommen","kommt","kommen"], part: "gekommen"},
+  {inf: "fahren", trans: "jechać", pres: ["fahre","fährst","fährt","fahren","fahrt","fahren"], part: "gefahren"},
+  {inf: "sehen", trans: "widzieć", pres: ["sehe","siehst","sieht","sehen","seht","sehen"], part: "gesehen"},
+  {inf: "essen", trans: "jeść", pres: ["esse","isst","isst","essen","esst","essen"], part: "gegessen"},
+  {inf: "geben", trans: "dawać", pres: ["gebe","gibst","gibt","geben","gebt","geben"], part: "gegeben"},
+  {inf: "nehmen", trans: "brać", pres: ["nehme","nimmst","nimmt","nehmen","nehmt","nehmen"], part: "genommen"}
+];
+
+let current;
+
+function losujVerb() {
+    current = verbs[Math.floor(Math.random() * verbs.length)];
+    document.getElementById("verb-title").innerText = "Czasownik: " + current.inf;
+    document.getElementById("verb-translation").innerText = "Tłumaczenie: " + current.trans;
+
+    ["ich","du","er","wir","ihr","sie","partizip"].forEach(id => {
+        document.getElementById(id).value = "";
+        document.getElementById(id).className = "";
+    });
+}
+
+function sprawdz() {
+    const ids = ["ich","du","er","wir","ihr","sie"];
+    ids.forEach((id, i) => {
+        const input = document.getElementById(id);
+        if(input.value.trim().toLowerCase() === current.pres[i]) input.className = "ok";
+        else input.className = "bad";
+    });
+    const partInput = document.getElementById("partizip");
+    if(partInput.value.trim().toLowerCase() === current.part) partInput.className = "ok";
+    else partInput.className = "bad";
+}
+
+// losujemy pierwszy czasownik przy starcie
+losujVerb();
+</script>
+
+</body>
+</html>
