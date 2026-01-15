@@ -33,7 +33,7 @@ button {
 
 <h2>Podaj formy po niemiecku</h2>
 
-<p id="pl-verb"></p>
+<p id="pl-verb"><b>Czasownik (PL):</b></p>
 
 <label>Bezokolicznik (DE)</label>
 <input id="infinitiv" placeholder="np. fahren">
@@ -42,15 +42,15 @@ button {
 <input id="partizip" placeholder="np. gefahren">
 
 <div class="umlaut">
-    <button onclick="insertChar('ä')">ä</button>
-    <button onclick="insertChar('ö')">ö</button>
-    <button onclick="insertChar('ü')">ü</button>
-    <button onclick="insertChar('ß')">ß</button>
+    <button type="button" onclick="insert('ä')">ä</button>
+    <button type="button" onclick="insert('ö')">ö</button>
+    <button type="button" onclick="insert('ü')">ü</button>
+    <button type="button" onclick="insert('ß')">ß</button>
 </div>
 
 <br>
-<button onclick="sprawdz()">Sprawdź</button>
-<button onclick="losuj()">Nowy czasownik</button>
+<button type="button" onclick="sprawdz()">Sprawdź</button>
+<button type="button" onclick="losuj()">Nowy czasownik</button>
 
 <p id="feedback"></p>
 <p id="score">Punkty: 0</p>
@@ -69,13 +69,15 @@ const verbs = [
   {pl:"czytać", de:"lesen", part:"gelesen"}
 ];
 
-let current = null;
+let current;
 let score = 0;
+// przechowujemy referencję do ostatnio fokusowanego inputa
+let lastFocused = null;
 
 function losuj() {
     current = verbs[Math.floor(Math.random() * verbs.length)];
-    document.getElementById("pl-verb").textContent =
-        "Czasownik (PL): " + current.pl;
+    document.getElementById("pl-verb").innerHTML =
+        "<b>Czasownik (PL):</b> " + current.pl;
 
     ["infinitiv","partizip"].forEach(id => {
         const el = document.getElementById(id);
@@ -83,7 +85,11 @@ function losuj() {
         el.className = "";
     });
 
-    document.getElementById("feedback").textContent = "";
+    document.getElementById("feedback").innerText = "";
+    // ustawiamy fokus na polu infinitiv i zapamiętujemy je
+    const inf = document.getElementById("infinitiv");
+    inf.focus();
+    lastFocused = inf;
 }
 
 function sprawdz() {
@@ -108,30 +114,38 @@ function sprawdz() {
 
     if (ok) {
         score++;
-        document.getElementById("feedback").textContent = "✅ Dobrze!";
+        document.getElementById("feedback").innerText = "✅ Dobrze!";
     } else {
-        document.getElementById("feedback").textContent =
-            ❌ Poprawnie: ${current.de} – ${current.part};
+        document.getElementById("feedback").innerText =
+            `❌ Poprawnie: ${current.de} – ${current.part}`;
     }
 
-    document.getElementById("score").textContent = "Punkty: " + score;
+    document.getElementById("score").innerText = "Punkty: " + score;
 }
 
-function insertChar(char) {
-    const el = document.activeElement;
-    if (!el || el.tagName !== "INPUT") return;
-
-    const start = el.selectionStart;
-    const end = el.selectionEnd;
-
-    el.value =
-        el.value.substring(0, start) +
-        char +
-        el.value.substring(end);
-
-    el.selectionStart = el.selectionEnd = start + 1;
-    el.focus();
+// wstawia znak do ostatnio fokusowanego inputa na pozycji kursora
+function insert(char) {
+    const el = lastFocused || document.getElementById("infinitiv");
+    if (el && el.tagName === "INPUT") {
+        // wstaw w miejsce kursora (selectionStart/End)
+        const start = el.selectionStart ?? el.value.length;
+        const end = el.selectionEnd ?? el.value.length;
+        el.value = el.value.slice(0, start) + char + el.value.slice(end);
+        const pos = start + char.length;
+        // ustaw kursor po wstawionym znaku
+        el.setSelectionRange(pos, pos);
+        el.focus();
+        lastFocused = el;
+    }
 }
+
+// ustawiamy nasłuch na inputach, żeby zapamiętać ostatnio fokusowane
+["infinitiv","partizip"].forEach(id => {
+    const el = document.getElementById(id);
+    el.addEventListener('focus', () => lastFocused = el);
+    el.addEventListener('click', () => lastFocused = el);
+    // opcjonalnie reagujemy na klikanie, aby lastFocused zawsze był aktualne
+});
 
 // start
 losuj();
